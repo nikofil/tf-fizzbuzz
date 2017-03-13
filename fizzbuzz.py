@@ -35,8 +35,12 @@ train_task = tf.train.GradientDescentOptimizer(0.08).minimize(cost)
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 
+batch_size = 128
+
 for _ in range(10000):
     perm = np.random.permutation(train_set)
     train_x = map(lambda a: np.array([0] * (6-len(a)) + a, dtype=np.float32), perm[:,0])
     train_y = map(lambda a: np.array(a, dtype=np.float32), perm[:,1])
-    sess.run(train_task, {x: train_x[:300], y_: train_y[:300]})
+    for i in range(0, len(train_x), batch_size):
+        sess.run(train_task, {x: train_x[i:i+batch_size], y_: train_y[i:i+batch_size]})
+    print(_, np.mean(sess.run(tf.argmax(y, 1), {x: train_x}) == np.argmax(train_y, 1)))
