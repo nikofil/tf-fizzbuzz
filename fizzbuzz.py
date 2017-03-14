@@ -40,10 +40,15 @@ sess.run(tf.global_variables_initializer())
 
 batch_size = 128
 
-for _ in range(10000):
+for _ in range(2000):
     perm = np.random.permutation(train_set)
     train_x = map(lambda a: np.array(a, dtype=np.float32), perm[:,0])
     train_y = map(lambda a: np.array(a, dtype=np.float32), perm[:,1])
     for i in range(0, len(train_x), batch_size):
         sess.run(train_task, {x: train_x[i:i+batch_size], y_: train_y[i:i+batch_size]})
     print(_, np.mean(sess.run(tf.argmax(y, 1), {x: train_x}) == np.argmax(train_y, 1)))
+
+test_x = map(num_encode, np.arange(100))
+test_pred = sess.run(tf.one_hot(tf.argmax(y, 1), 4), {x: test_x})
+for i, j in enumerate(test_pred):
+    print(fbdec(j, i))
