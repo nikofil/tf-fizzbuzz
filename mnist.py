@@ -49,5 +49,7 @@ f, axarr = plt.subplots(4, 5)
 
 for ind, i in enumerate(wrong_disp):
     axarr[ind/5, ind%5].imshow(mnist.validation.images[i].reshape([28, 28]))
-    axarr[ind/5, ind%5].set_title('Predicted {0}'.format(str(result[i])))
+    axarr[ind/5, ind%5].set_title('Predicted {0}, was {1}'.format(
+        str(result[i]),
+        str(np.argmax(mnist.validation.labels[i]))))
 plt.show()
