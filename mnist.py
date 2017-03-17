@@ -2,6 +2,7 @@ import random
 import sys 
 import tensorflow as tf
 import numpy as np
+import matplotlib.pyplot as plt
 from tensorflow.examples.tutorials.mnist import input_data as mnist_input
 
 mnist = mnist_input.read_data_sets('MNIST_data', one_hot=True)
@@ -40,4 +41,13 @@ for epoch in range(6000):
         print(epoch, np.mean(np.argmax(trainy, 1) == sess.run(tf.argmax(y, 1), {x: trainx})))
 
 result = sess.run(tf.argmax(y, 1), {x: mnist.validation.images})
-print np.mean(result == np.argmax(mnist.validation.labels, 1))
+incorrect = result != np.argmax(mnist.validation.labels, 1)
+print np.mean(1 - incorrect)
+
+wrong_disp = np.where(incorrect)[0][:20]
+f, axarr = plt.subplots(4, 5)
+
+for ind, i in enumerate(wrong_disp):
+    axarr[ind/5, ind%5].imshow(mnist.validation.images[i].reshape([28, 28]))
+    axarr[ind/5, ind%5].set_title('Predicted {0}'.format(str(result[i])))
+plt.show()
