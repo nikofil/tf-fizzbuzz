@@ -11,12 +11,21 @@ sess = tf.Session()
 x = tf.placeholder(tf.float32)
 y_ = tf.placeholder(tf.float32)
 
-W1 = tf.Variable(tf.truncated_normal([784, 40], stddev=0.3))
-b1 = tf.Variable(tf.truncated_normal([40], stddev=0.3))
-h = tf.nn.relu(tf.matmul(x, W1) + b1)
+ximg = tf.reshape(x, [-1, 28, 28, 1])[:, 4:24, 4:24, :]
 
-W2 = tf.Variable(tf.truncated_normal([40, 10], stddev=0.3))
-b2 = tf.Variable(tf.truncated_normal([10], stddev=0.3))
+ximg = tf.nn.max_pool(ximg, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
+
+W1 = tf.Variable(tf.truncated_normal([3, 3, 1, 8], stddev=0.3))
+b1 = tf.Variable(tf.constant(0.3 * np.ones([5, 5, 8]), dtype=tf.float32))
+
+h_i = tf.nn.conv2d(ximg, W1, [1, 1, 1, 1], 'SAME')
+
+h_i = tf.nn.max_pool(h_i, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME') + b1
+
+h = tf.nn.relu(tf.reshape(h_i, [-1, 5*5*8]))
+
+W2 = tf.Variable(tf.truncated_normal([5*5*8, 10], stddev=0.3))
+b2 = tf.Variable(tf.constant(0.3 * np.ones([10]), dtype=tf.float32))
 y = tf.matmul(h, W2) + b2
 
 cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
@@ -24,11 +33,11 @@ train = tf.train.GradientDescentOptimizer(0.05).minimize(cost)
 
 sess.run(tf.global_variables_initializer())
 
-for epoch in range(3000):
+for epoch in range(6000):
     trainx, trainy = mnist.train.next_batch(100)
     sess.run(train, {x: trainx, y_: trainy})
-    print(epoch, np.mean(np.argmax(trainy, 1) == sess.run(tf.argmax(y, 1), {x: trainx})))
+    if epoch % 100 == 0:
+        print(epoch, np.mean(np.argmax(trainy, 1) == sess.run(tf.argmax(y, 1), {x: trainx})))
 
 result = sess.run(tf.argmax(y, 1), {x: mnist.validation.images})
-print ' '.join(map(str, result))
-
+print np.mean(result == np.argmax(mnist.validation.labels, 1))
